@@ -1,7 +1,7 @@
 '''
 Created on Nov 11, 2014
 
-@author: vaddera
+@author: vaddera, campbeeg
 '''
 # Defining Global Variables:
 rows = 'ABCDEFGHI'
@@ -18,7 +18,7 @@ unitList = ([shape(rows, col) for col in columns] +
             [shape(row1, cols) for row1 in ('ABC', 'DEF', 'GHI') for cols in ('123', '456', '789')])
 
 units = dict((square, [unit for unit in unitList if square in unit]) for square in squares)
-peers = dict((square, set(sum(units[square],[]))-set([square])) for square in squares)
+peers = dict((square, set(sum(units[square],[])) - set([square])) for square in squares)
 
 # Parsing a grid:
 def parseGrid(grid):
@@ -71,7 +71,7 @@ def eliminate(values, square, d):
 # Displays grids:
 def display(values):
     width = 1 + max(len(values[square]) for square in squares)
-    line = '+'.join(['-'*(width*3)]*3)
+    line = '+'.join(['-' * (width * 3)] * 3)
     
     for row in rows:
         print ''.join(values[row + col].center(width) + ('|' if col in '36' else '') for col in columns)

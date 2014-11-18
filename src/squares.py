@@ -3,6 +3,8 @@ Created on Nov 11, 2014
 
 @author: vaddera, campbeeg
 '''
+import time
+
 # Defining Global Variables:
 rows = 'ABCDEFGHI'
 columns = '123456789'
@@ -131,12 +133,48 @@ def some(seq):
             return i
     return False
     
+
+def solved(values):
+    "A puzzle is solved if each unit is a permutation of the digits 1 to 9."
+    def unitsolved(unit): return set(values[s] for s in unit) == set(columns)
+    return values is not False and all(unitsolved(unit) for unit in unitList)
+    
+def solve_all(grids, name='', showif=0.0):
+    """Attempt to solve a sequence of grids. Report results.
+    When showif is a number of seconds, display puzzles that take longer.
+    When showif is None, don't display any puzzles."""
+    def time_solve(grid):
+        start = time.clock()
+        values = solve(grid)
+        t = time.clock()-start
+        ## Display puzzles that take long enough
+        #if showif is not None and t > showif:
+        if 1==1:
+            display(gridValues(grid))
+            if values: display(values)
+            print '(%.2f seconds)\n' % t
+        return (t, solved(values))
+    times, results = zip(*[time_solve(grid) for grid in grids])
+    N = len(grids)
+    if N > 1:
+        print "Solved %d of %d %s puzzles (avg %.2f secs (%d Hz), max %.2f secs)." % (
+            sum(results), N, name, sum(times)/N, N/sum(times), max(times))
+    
 ''' Main code: '''
-grid1 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
-hardest = '85...24..72......9..4.........1.7..23.5...9...4...........8..7..17..........36.4.'
+if __name__ == '__main__':
+
+    grid1 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
+    hardest = '85...24..72......9..4.........1.7..23.5...9...4...........8..7..17..........36.4.'
+
+    solve_all(grid1.split(), "grid1", None)
+    solve_all(hardest.split(), "hardest", None)
+
+
+'''
 print '\n----------------- Solving random sequence --------------------\n'
 display(gridValues(grid1))
 display(solve(grid1))
 print '----------------- Solving hardest sequence --------------------\n'
 display(gridValues(hardest))
 display(solve(hardest))
+'''

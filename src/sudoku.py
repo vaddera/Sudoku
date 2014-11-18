@@ -7,11 +7,15 @@ Created on Nov 11, 2014
 import time
 
 def shape(A, B):
-    return [a+b for a in A for b in B]
+    lst = []
+    for a in A:
+        for b in B:
+            lst.append(a + b)
+    return lst
 
-cols   = '123456789'
-rows     = 'ABCDEFGHI'
-squares  = shape(rows, cols)
+cols = '123456789'
+rows = 'ABCDEFGHI'
+squares = shape(rows, cols)
 
 lst = []
 
@@ -25,20 +29,30 @@ for r1 in ('ABC', 'DEF', 'GHI'):
 
 unitList = lst
 
-units = dict((s, [u for u in unitList if s in u])
-             for s in squares)
-peers = dict((s, set(sum(units[s],[]))-set([s]))
-             for s in squares)
+units = dict()
+peers = dict()
+for s in squares:
+    temp = []
+    for u in unitList:
+        if s in u:
+            temp.append(u)
+    units[s] = temp
+    peers[s] = set(sum(units[s], [])) - set([s])
 
 def parseGrid(grid):
-    values = dict((s, cols) for s in squares)
-    for s,d in gridValues(grid).items():
+    values = dict()
+    for s in squares:
+        values[s] = cols
+    for s, d in gridValues(grid).items():
         if d in cols and not assign(values, s, d):
             return False
     return values
 
 def gridValues(grid):
-    chars = [c for c in grid if c in cols or c in '0.']
+    chars = []
+    for c in grid:
+        if c in cols or c in '0.':
+            chars.append(c)
     
     if len(chars) == 81:
         print 'Sudoku string length pass.'
@@ -48,25 +62,31 @@ def gridValues(grid):
 
 def assign(values, s, d):
     other_values = values[s].replace(d, '')
-    if all(eliminate(values, s, d2) for d2 in other_values):
-        return values
-    else:
-        return False
-
+    
+    for d2 in other_values:
+        if not eliminate(values, s, d2):
+            return False
+    return values
+    
 def eliminate(values, s, d):
     if d not in values[s]:
         return values
-    values[s] = values[s].replace(d,'')
+    values[s] = values[s].replace(d, '')
     
     if len(values[s]) == 0:
         return False
     elif len(values[s]) == 1:
         d2 = values[s]
-        if not all(eliminate(values, s2, d2) for s2 in peers[s]):
-            return False
+        for s2 in peers[s]:
+            if not eliminate(values, s2, d2):
+                return False  
     
     for u in units[s]:
-        dplaces = [s for s in u if d in values[s]]
+        dplaces = []
+        for s in u:
+            if d in values[s]:
+                dplaces.append(s)
+                
         if len(dplaces) == 0:
             return False 
         elif len(dplaces) == 1:
@@ -77,10 +97,13 @@ def eliminate(values, s, d):
 
 
 def display(values):
-    width = 1+max(len(values[s]) for s in squares)
-    line = '+'.join(['-'*(width*3)]*3)
+    w = []
+    for s in squares:
+        w.append(len(values[s]))
+    width = 1 + max(w)
+    line = '+'.join(['-' * (width * 3)] * 3)
     for r in rows:
-        print ''.join(values[r+c].center(width)+('|' if c in '36' else '')
+        print ''.join(values[r + c].center(width) + ('|' if c in '36' else '')
                       for c in cols)
         if r in 'CF': print line
     print
@@ -105,7 +128,11 @@ def dfs(values):
             lst.append((len(values[square]), square))
     n, square = min(lst)
     
-    return some(dfs(assign(values.copy(), square, d)) for d in values[square])
+    tmp = []
+    for d in values[square]:
+        tmp.append(dfs(assign(values.copy(), square, d)))
+    
+    return some(tmp)
     
 
 def some(seq):
@@ -113,44 +140,20 @@ def some(seq):
         if e: return e
     return False
 
-'''Ethan, please take a look on the function below. I would like to remove the time calculation.'''
-
-def solution(grids, name='', showif=0.0):
-    """Attempt to solve a sequence of grids. Report results.
-    When showif is a number of seconds, display puzzles that take longer.
-    When showif is None, don't display any puzzles."""
-    def timeSolve(grid):
-        start = time.clock()
-        values = solve(grid)
-        t = time.clock()-start
-        ## Display puzzles that take long enough
-        #if showif is not None and t > showif:
-        if 1==1:
-            display(gridValues(grid))
-            if values: display(values)
-            print '(%.2f seconds)\n' % t
-        return (t, solved(values))
-    times, results = zip(*[timeSolve(grid) for grid in grids])
-    N = len(grids)
-    if N > 1:
-        print "Solved %d of %d %s puzzles (avg %.2f secs (%d Hz), max %.2f secs)." % (
-            sum(results), N, name, sum(times)/N, N/sum(times), max(times))
-
-def solved(values):
-    def unitsolved(unit): return set(values[s] for s in unit) == set(cols)
-    return values is not False and all(unitsolved(unit) for unit in unitList)
-
 ''' Main Code: '''
 
 # Puzzles
-grid1  = '003020600900305001001806400008102900700000008006708200002609500800203009005010300'
-grid2  = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
-hard1  = '.....6....59.....82....8....45........3........6..3.54...325..6..................'
+grid1 = '003020600900305001001806400008102900700000008006708200002609500800203009005010300'
+grid2 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
+hard1 = '.....6....59.....82....8....45........3........6..3.54...325..6..................'
 hardest = '85...24..72......9..4.........1.7..23.5...9...4...........8..7..17..........36.4.'
 
 # Solving Puzzles
-solution(grid1.split(), "grid1", None)
-solution(grid2.split(), "grid2", None)
-solution(hard1.split(), "hard1", None)
-solution(hardest.split(), "hardest", None)
-print 'Terminated.'
+display(gridValues(grid1))
+display(solve(grid1))
+display(gridValues(grid2))
+display(solve(grid2))
+display(gridValues(hard1))
+display(solve(hard1))
+display(gridValues(hardest))
+display(solve(hardest))

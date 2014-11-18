@@ -9,37 +9,56 @@ columns = '123456789'
 
 # Shaping function:
 def shape(A,B):
-    return [a+b for a in A for b in B]
+    lst = []
+    for a in A:
+        for b in B:
+            lst.append(a + b)
+    return lst
 
 # Shaping Process:
 squares = shape(rows, columns)
-unitList = ([shape(rows, col) for col in columns] +
-            [shape(row, columns) for row in rows] +
-            [shape(row1, cols) for row1 in ('ABC', 'DEF', 'GHI') for cols in ('123', '456', '789')])
+lst = []
+
+for col in columns:
+    lst.append(shape(rows, col))
+for row in rows:
+    lst.append(shape(row, columns))
+for row1 in ('ABC', 'DEF', 'GHI'):
+    for cols in ('123', '456', '789'):
+        lst.append(shape(row1, cols))
+
+unitList = lst
 
 units = dict((square, [unit for unit in unitList if square in unit]) for square in squares)
 peers = dict((square, set(sum(units[square],[])) - set([square])) for square in squares)
 
 # Parsing a grid:
 def parseGrid(grid):
-    values = dict((square, columns) for square in squares)
+    lst = []
+    for square in squares:
+        lst.append((square, columns))
+    values = dict(lst)
     for square, d in gridValues(grid).items():
         if d in columns and not assign(values, square, d):
             return False #Fails if it can't assign d to a square
         return values
     
 def gridValues(grid):
-    chars = [col for col in grid if col in columns or col in '0.']
+    chars = []
+    for col in grid:
+        if col in columns or col in '0.':
+            chars.append(col)
     assert len(chars) == 81
     return dict(zip(squares, chars))
 
 # Constraint propagation:
 def assign(values, square, d):
     otherValues = values[square].replace(d, '')
-    if all(eliminate(values, square, d2) for d2 in otherValues):
-        return values
-    else:
-        return False
+    
+    for d2 in otherValues:
+        if not eliminate(values, square, d2):
+            return False
+    return values
     
 def eliminate(values, square, d):
     
@@ -53,12 +72,16 @@ def eliminate(values, square, d):
     
     elif len(values[square]) == 1:
         d2 = values[square]
-        
-        if not all(eliminate(values, sqr, d2) for sqr in peers[square]):
-            return False
+        for sqr in peers[square]:
+            if not eliminate(values, sqr, d2):
+                return False
         
     for i in units[square]:
-        placed = [square for square in i if d in values[square]]
+        placed = []
+        
+        for square in i:
+            if d in values[square]:
+                placed.append(square)
         
         if len(placed) == 0:
             return False
@@ -88,10 +111,18 @@ def dfs(values):
     if values is False:
         return False
     
-    if all(len(values[square]) == 1 for square in squares):
+    temp = []
+    for square in squares:
+        temp.append(len(values[square]) == 1)
+    if all(temp):
         return values
     
-    n, square = min((len(values[square]), square) for square in squares if len(values[square]) > 1)
+    lst = []
+    for square in squares:
+        if len(values[square]) > 1:
+            lst.append((len(values[square]), square))
+    n, square = min(lst)
+    
     return some(dfs(assign(values.copy(), square, d)) for d in values[square])
 
 def some(seq):

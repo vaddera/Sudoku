@@ -4,8 +4,6 @@ Created on Nov 11, 2014
 @author: vaddera, campbeeg
 '''
 
-import time
-
 def shape(A, B):
     lst = []
     for a in A:
@@ -145,7 +143,6 @@ def some(seq):
 # Puzzles
 grid1 = '003020600900305001001806400008102900700000008006708200002609500800203009005010300'
 grid2 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
-hard1 = '.....6....59.....82....8....45........3........6..3.54...325..6..................'
 hardest = '85...24..72......9..4.........1.7..23.5...9...4...........8..7..17..........36.4.'
 
 # Solving Puzzles
@@ -153,7 +150,7 @@ display(gridValues(grid1))
 display(solve(grid1))
 display(gridValues(grid2))
 display(solve(grid2))
-display(gridValues(hard1))
-display(solve(hard1))
 display(gridValues(hardest))
 display(solve(hardest))
+
+print 'Terminated.'
